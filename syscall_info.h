@@ -1,0 +1,33 @@
+#ifndef SYSCALL_INFO_H
+#define SYSCALL_INFO_H
+
+#define MAX_SYSCALL_ARGS 6
+#define REG_ALIGN __attribute__ ((aligned (sizeof(void*))));
+
+struct write_args {
+    int    fd    REG_ALIGN;
+    void   *buf  REG_ALIGN;
+    size_t count REG_ALIGN;
+};
+
+struct exit_args {
+    int status REG_ALIGN;
+};
+
+struct syscall_info {
+    int syscall_no;
+
+    union {
+        struct write_args write;
+        struct exit_args  exit;
+        struct exit_args  exit_group;
+
+        struct {
+            void *registers[MAX_SYSCALL_ARGS];
+        } __registers;
+    } args;
+};
+
+int get_syscall_info(pid_t pid, struct syscall_info *info);
+
+#endif
