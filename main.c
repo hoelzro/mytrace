@@ -74,20 +74,19 @@ handle_syscall(pid_t pid)
 
     get_syscall_info(pid, &info);
 
-    if(info.syscall_no == __NR_write) {
-        char *buffer;
+    switch(info.syscall_no) {
+        case __NR_connect: {
+            struct sockaddr *addr;
 
-        buffer = malloc(info.args.write.count + 1);
-        pmemcpy(buffer, info.args.write.buf, pid, info.args.write.count);
-        buffer[info.args.write.count] = '\0';
+            addr = malloc(info.args.connect.addrlen);
+            pmemcpy((char *) addr, (const char *) info.args.connect.addr, pid,
+                info.args.connect.addrlen);
 
-        free(buffer);
-    } else if(info.syscall_no == __NR_exit) {
-        printf("status = %d\n", info.args.exit.status);
-    } else if(info.syscall_no == __NR_exit_group) {
-        printf("status = %d\n", info.args.exit_group.status);
+            free(addr);
+        } /* fall through so next_trace gets called */
+        default:
+            return next_trace(pid); /* we don't care about other syscalls */
     }
-    return next_trace(pid);
 }
 
 static void
