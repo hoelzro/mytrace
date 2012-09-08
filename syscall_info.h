@@ -10,6 +10,12 @@ struct write_args {
     size_t count REG_ALIGN;
 };
 
+struct connect_args {
+    int                    sockfd  REG_ALIGN;
+    const struct sockaddr *addr    REG_ALIGN;
+    socklen_t              addrlen REG_ALIGN;
+};
+
 struct exit_args {
     int status REG_ALIGN;
 };
@@ -18,9 +24,10 @@ struct syscall_info {
     int syscall_no;
 
     union {
-        struct write_args write;
-        struct exit_args  exit;
-        struct exit_args  exit_group;
+        struct write_args   write;
+        struct connect_args connect;
+        struct exit_args    exit;
+        struct exit_args    exit_group;
 
         struct {
             void *registers[MAX_SYSCALL_ARGS];
