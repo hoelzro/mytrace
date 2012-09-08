@@ -43,7 +43,11 @@ next_trace(pid_t pid)
 
     ptrace(PTRACE_SYSCALL, pid, NULL, 0);
     ok = waitpid(pid, &status, 0);
-    /* XXX check ok */
+
+    if(ok == -1) {
+        /* XXX elaborate */
+        return 0;
+    }
 
     return status;
 }
