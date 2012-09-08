@@ -4,6 +4,10 @@
 
 #include "syscall_info.h"
 
+#if !__x86_64__
+#  error "This only works on 64-bit Intel machines for now"
+#endif
+
 /****************************************************************************/
 /* Begin platform-specific code (put this in a different file) */
 /****************************************************************************/
