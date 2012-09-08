@@ -123,8 +123,7 @@ main(void)
         ptrace(PTRACE_TRACEME, 0, 0, 0);
         raise(SIGINT);
 
-        printf("Hello!\n");
-        exit(0);
+        execlp("nc", "nc", "localhost", "2000");
     }
 
     return 0;
