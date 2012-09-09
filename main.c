@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/ptrace.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -12,6 +13,8 @@
 #include "syscall_info.h"
 
 #define WORD_SIZE (sizeof(void*))
+
+fd_set mysql_candidates;
 
 static void
 init_tracing(pid_t pid)
@@ -85,10 +88,8 @@ handle_syscall(pid_t pid)
             status = next_trace(pid);
             retval = get_syscall_return(pid);
 
-            if(retval < 0 && retval != -EINPROGRESS) {
-                printf("connect(): error - %s\n", strerror(-1 * retval));
-            } else {
-                printf("connect(): success!\n");
+            if(retval >= 0 || retval == -EINPROGRESS) {
+                FD_SET(info.args.connect.sockfd, &mysql_candidates);
             }
 
             return status;
@@ -120,6 +121,8 @@ int
 main(void)
 {
     pid_t child;
+
+    FD_ZERO(&mysql_candidates);
 
     child = fork();
     if(child == -1) {
