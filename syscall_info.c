@@ -28,6 +28,17 @@ populate_registers(struct syscall_info *info, struct user_regs_struct *regs)
     info->args.__registers.registers[5] = (void *) regs->r9; 
 }
 
+int
+get_syscall_return(pid_t pid)
+{
+    struct user_regs_struct registers;
+    int status;
+
+    status = ptrace(PTRACE_GETREGS, pid, NULL, &registers);
+
+    return registers.rax;
+}
+
 /****************************************************************************/
 /* End platform-specific code (put this in a different file) */
 /****************************************************************************/

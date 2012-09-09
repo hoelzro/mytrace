@@ -36,5 +36,6 @@ struct syscall_info {
 };
 
 int get_syscall_info(pid_t pid, struct syscall_info *info);
+int get_syscall_return(pid_t pid);
 
 #endif
