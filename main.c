@@ -79,13 +79,8 @@ handle_syscall(pid_t pid)
 
     switch(info.syscall_no) {
         case __NR_connect: {
-            struct sockaddr *addr;
             int status;
             int retval;
-
-            addr = malloc(info.args.connect.addrlen);
-            pmemcpy((char *) addr, (const char *) info.args.connect.addr, pid,
-                info.args.connect.addrlen);
 
             status = next_trace(pid);
             retval = get_syscall_return(pid);
@@ -95,8 +90,6 @@ handle_syscall(pid_t pid)
             } else {
                 printf("connect(): success!\n");
             }
-
-            free(addr);
 
             return status;
         }
