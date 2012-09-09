@@ -126,7 +126,7 @@ main(void)
         ptrace(PTRACE_TRACEME, 0, 0, 0);
         raise(SIGINT);
 
-        execlp("nc", "nc", "localhost", "2000");
+        execlp("nc", "nc", "localhost", "2000", NULL);
     }
 
     return 0;
