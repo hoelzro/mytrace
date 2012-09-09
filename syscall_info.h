@@ -10,6 +10,12 @@ struct write_args {
     size_t count REG_ALIGN;
 };
 
+struct socket_args {
+    int domain   REG_ALIGN;
+    int type     REG_ALIGN;
+    int protocol REG_ALIGN;
+};
+
 struct connect_args {
     int                    sockfd  REG_ALIGN;
     const struct sockaddr *addr    REG_ALIGN;
@@ -25,6 +31,7 @@ struct syscall_info {
 
     union {
         struct write_args   write;
+        struct socket_args  socket;
         struct connect_args connect;
         struct exit_args    exit;
         struct exit_args    exit_group;
