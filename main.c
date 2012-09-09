@@ -80,13 +80,26 @@ handle_syscall(pid_t pid)
     switch(info.syscall_no) {
         case __NR_connect: {
             struct sockaddr *addr;
+            int status;
+            int retval;
 
             addr = malloc(info.args.connect.addrlen);
             pmemcpy((char *) addr, (const char *) info.args.connect.addr, pid,
                 info.args.connect.addrlen);
 
+            status = next_trace(pid);
+            retval = get_syscall_return(pid);
+
+            if(retval < 0 && retval != -EINPROGRESS) {
+                printf("connect(): error - %s\n", strerror(-1 * retval));
+            } else {
+                printf("connect(): success!\n");
+            }
+
             free(addr);
-        } /* fall through so next_trace gets called */
+
+            return status;
+        }
         default:
             return next_trace(pid); /* we don't care about other syscalls */
     }
