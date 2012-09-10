@@ -76,6 +76,7 @@ pmemcpy(char *dst, const char *src, pid_t pid, size_t count)
     }
 }
 
+/* XXX we should probably detect closing of FDs */
 static int
 handle_syscall(pid_t pid)
 {
