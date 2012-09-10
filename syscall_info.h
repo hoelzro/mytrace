@@ -30,6 +30,7 @@ struct syscall_info {
     int syscall_no;
 
     union {
+        struct write_args   read;
         struct write_args   write;
         struct socket_args  socket;
         struct connect_args connect;
