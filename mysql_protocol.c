@@ -16,6 +16,15 @@ read_long(uint8_t *buffer)
     return (buffer[3] << 24) | (buffer[2] << 16) | (buffer[1] << 8) | buffer[0];
 }
 
+static uint32_t
+read_packet_size(uint8_t *buffer)
+{
+    uint32_t size = read_long(buffer);
+    size &= 0xffffff; /* the fourth byte is the sequence ID, so clear it */
+
+    return size;
+}
+
 /* XXX
  *
  * This routine currently assumes that the entire first part of the handshake
@@ -30,8 +39,7 @@ read_mysql_handshake(uint8_t *buffer, size_t size, struct mysql_handshake_packet
 {
     uint32_t packet_size;
 
-    packet_size = read_long(buffer);
-    packet_size &= 0xffffff; /* the fourth byte is the sequence ID, so clear it */
+    packet_size = read_packet_size(buffer);
 
     if(packet_size != size - 4) { /* four bytes for the header */
         return 0;
