@@ -16,6 +16,7 @@
 #define WORD_SIZE (sizeof(void*))
 
 fd_set mysql_candidates;
+fd_set pending_auth;
 fd_set mysql_connections;
 
 static void
@@ -120,6 +121,7 @@ handle_syscall(pid_t pid)
                     ok = read_mysql_handshake(buffer, retval, &packet);
 
                     if(ok) {
+                        FD_SET(info.args.read.fd, &pending_auth);
                         FD_SET(info.args.read.fd, &mysql_connections);
                     }
                     free(buffer);
@@ -157,6 +159,7 @@ main(void)
     pid_t child;
 
     FD_ZERO(&mysql_candidates);
+    FD_ZERO(&pending_auth);
     FD_ZERO(&mysql_connections);
 
     child = fork();
