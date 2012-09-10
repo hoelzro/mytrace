@@ -49,6 +49,21 @@ struct mysql_handshake_packet {
     uint32_t    capability_flags;
 };
 
+struct mysql_command_query {
+    char *query_text;
+};
+
+struct mysql_command_packet {
+    uint8_t command;
+    union {
+        struct mysql_command_query query;
+    };
+};
+
 int read_mysql_handshake(uint8_t *buffer, size_t size, struct mysql_handshake_packet *packet);
+
+int read_mysql_command(uint8_t *buffer, size_t size, struct mysql_command_packet *packet);
+
+void free_mysql_command(struct mysql_command_packet *packet);
 
 #endif
