@@ -169,9 +169,7 @@ perform_trace(pid_t pid)
     init_tracing(pid);
 
     while(status = next_trace(pid)) {
-        if(is_signal(status)) {
-            printf("Got signal: %d\n", WSTOPSIG(status));
-        } else if(is_syscall(status)) {
+        if(!is_signal(status) && is_syscall(status)) {
             if(! handle_syscall(pid)) {
                 break;
             }
