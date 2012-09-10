@@ -130,6 +130,31 @@ handle_syscall(pid_t pid)
 
             return status;
         }
+        case __NR_write: {
+            /* XXX just assume (for the time being) that auth is successful */
+            if(FD_ISSET(info.args.write.fd, &pending_auth)) {
+                FD_CLR(info.args.write.fd, &pending_auth);
+            } else if(FD_ISSET(info.args.write.fd, &mysql_connections)) {
+                char *buffer; /* XXX again, can we do without this? */
+                size_t buffer_len;
+                struct mysql_command_packet command;
+
+                buffer_len = info.args.write.count;
+                buffer     = malloc(buffer_len);
+                pmemcpy(buffer, info.args.write.buf, pid, buffer_len);
+                read_mysql_command(buffer, buffer_len, &command);
+
+                switch(command.command) {
+                    case COM_QUERY:
+                        printf("%s\n", command.query.query_text);
+                        break;
+                    default:
+                        break; /* we don't care */
+                }
+
+                free_mysql_command(&command);
+            }
+        }
         default:
             return next_trace(pid); /* we don't care about other syscalls */
     }
