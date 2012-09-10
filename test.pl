@@ -16,5 +16,4 @@ my $sth = $dbh->prepare('SHOW DATABASES');
 $sth->execute;
 
 while(my $row = $sth->fetch) {
-    say join(' ', map { $_ // 'NULL' } @$row);
 }
