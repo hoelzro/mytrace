@@ -38,7 +38,6 @@ enum mysql_commands {
     COM_BINLOG_DUMP_GTID
 };
 
-/* uhhh...this is the handshake packet. */
 struct mysql_handshake_packet {
     uint8_t     proto_version;
     char       *server_version;
