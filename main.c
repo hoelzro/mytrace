@@ -10,11 +10,13 @@
 #include <unistd.h>
 
 #include "die.h"
+#include "mysql_protocol.h"
 #include "syscall_info.h"
 
 #define WORD_SIZE (sizeof(void*))
 
 fd_set mysql_candidates;
+fd_set mysql_connections;
 
 static void
 init_tracing(pid_t pid)
@@ -88,8 +90,40 @@ handle_syscall(pid_t pid)
             status = next_trace(pid);
             retval = get_syscall_return(pid);
 
+            /* XXX filter based on port number/socket name? */
             if(retval >= 0 || retval == -EINPROGRESS) {
                 FD_SET(info.args.connect.sockfd, &mysql_candidates);
+            }
+
+            return status;
+        }
+        /* XXX what about recv? */
+        case __NR_read: {
+            int status = next_trace(pid);
+
+            /* XXX bail if it's SSL */
+            /* XXX compression? */
+            if(FD_ISSET(info.args.read.fd, &mysql_candidates)) {
+                int retval;
+
+                FD_CLR(info.args.read.fd, &mysql_candidates);
+                retval = get_syscall_return(pid);
+
+                if(retval > 0) {
+                    char *buffer; /* XXX can we do without an intermediary buffer? */
+                    struct mysql_handshake_packet packet;
+                    int ok;
+
+                    buffer = malloc(retval);
+                    memset(buffer, 0, retval);
+                    pmemcpy(buffer, info.args.read.buf, pid, retval);
+                    ok = read_mysql_handshake(buffer, retval, &packet);
+
+                    if(ok) {
+                        FD_SET(info.args.read.fd, &mysql_connections);
+                    }
+                    free(buffer);
+                }
             }
 
             return status;
@@ -123,6 +157,7 @@ main(void)
     pid_t child;
 
     FD_ZERO(&mysql_candidates);
+    FD_ZERO(&mysql_connections);
 
     child = fork();
     if(child == -1) {
