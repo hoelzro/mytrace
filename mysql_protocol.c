@@ -1,6 +1,7 @@
 #include "mysql_protocol.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 #define MYSQL_PROTO_VERSION 10
 
@@ -117,4 +118,44 @@ read_mysql_handshake(uint8_t *buffer, size_t size, struct mysql_handshake_packet
     size   -= 2;
 
     return 1;
+}
+
+/* XXX we should really do some bounds-checking */
+int
+read_mysql_command(uint8_t *buffer, size_t size, struct mysql_command_packet *packet)
+{
+    uint32_t packet_size = read_packet_size(buffer);
+
+    buffer += 4;
+    size   -= 4;
+
+    packet->command = buffer[0];
+
+    ++buffer;
+    --size;
+
+    switch(packet->command) {
+        case COM_QUERY:
+            packet->query.query_text = malloc(size + 1);
+            memcpy(packet->query.query_text, buffer, size);
+            packet->query.query_text[size] = '\0';
+            break;
+        default:
+            /* XXX we should probably log or something that we haven't implemented this command */
+            break;
+    }
+
+    return 1;
+}
+
+void
+free_mysql_command(struct mysql_command_packet *packet)
+{
+    switch(packet->command) {
+        case COM_QUERY:
+            free(packet->query.query_text);
+            break;
+        default:
+            break; /* unimplemented */
+    }
 }
