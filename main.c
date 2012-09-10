@@ -135,7 +135,7 @@ main(void)
         ptrace(PTRACE_TRACEME, 0, 0, 0);
         raise(SIGINT);
 
-        execlp("nc", "nc", "localhost", "2000", NULL);
+        execlp("perl", "perl", "test.pl", NULL);
     }
 
     return 0;
